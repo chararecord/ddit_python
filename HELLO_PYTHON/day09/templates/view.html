@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	HELLO VIEW <br/>
+	{{a}} <br/>
+	
+	{% for i in b %}
+	{{i}}
+	{% endfor %} <br/>
+	
+	<table border="1">
+		<tr>
+			<th>col01</th>
+			<th>col02</th>
+			<th>col03</th>
+		</tr>
+		{% for i in c %}
+		<tr>
+		<td>{{i.col01}}</td>
+		<td>{{i.col02}}</td>
+		<td>{{i.col03}}</td>
+		</tr>
+		{% endfor %}
+	</table>
+</body>
+</html>
