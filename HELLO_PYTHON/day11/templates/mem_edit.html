@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<h3>mem_edit</h3>
+	<form action="mem_edit_act" method="post">
+		<table border="1" style="text-align: center;">
+			<tr>
+				<th>아이디</th>
+				<td><input type="text" name="m_id" value="{{mem.m_id}}" /></td>
+			</tr>
+			<tr>
+				<th>이름</th>
+				<td><input type="text" name="m_nm" value="{{mem.m_nm}}" /></td>
+			</tr>
+			<tr>
+				<th>전화번호</th>
+				<td><input type="text" name="tel" value="{{mem.tel}}" /></td>
+			</tr>
+			<tr>
+				<th>생년월일</th>
+				<td><input type="text" name="ymd" value="{{mem.ymd}}" /></td>
+			</tr>
+			<tr>
+				<td colspan="4">
+					<input type="submit" value="수정" />
+				</td>
+			</tr>
+		</table>
+	</form>
+</body>
+</html>
