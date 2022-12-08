@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript">
+	function fn_list(){
+		let data = "{{list}}"
+		$.ajax({
+			type: 'POST',
+			url: 'ajax',
+			data: JSON.stringify(data),
+			dataType : 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let list = data.list;
+				let html = "";
+				for(i=0; i<list.length; i++){
+					let e = list[i]
+// 					html += "<tr>";
+// 					html += "<td>"+e.e_id+"</td>";
+// 					html += "<td>"+e.e_name+"</td>";
+// 					html += "<td>"+e.sex+"</td>";
+// 					html += "<td>"+e.addr+"</td>";
+// 					html += "</tr>";
+
+					html += `
+						<tr>
+							<td><a href="javascript:fn_one('${e.e_id}')">${e.e_id}</a></td>
+							<td>${e.e_name}</td>
+							<td>${e.sex}</td>
+							<td>${e.addr}</td>
+						</tr
+					`;
+				}
+				
+				let obj = document.querySelector("#my_tbody");
+				obj.innerHTML = html;
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+	
+	function fn_one(e_id){
+		let param = {
+			'e_id': e_id
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_one',
+			data: JSON.stringify(param),
+			dataType : 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let emp = data.emp
+				console.log(emp.e_id)
+				
+				let obj_e_id	= document.querySelector("#e_id");
+				let obj_e_name  = document.querySelector("#e_name");
+				let obj_sex		= document.querySelector("#sex");
+				let obj_addr	= document.querySelector("#addr");
+				
+				obj_e_id.value   = emp.e_id;
+				obj_e_name.value = emp.e_name;
+				obj_sex.value	 = emp.sex;
+				obj_addr.value   = emp.addr;
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+	
+	function fn_add(){
+		let obj_e_id	= document.querySelector("#e_id");
+		let obj_e_name  = document.querySelector("#e_name");
+		let obj_sex		= document.querySelector("#sex");
+		let obj_addr	= document.querySelector("#addr");
+		
+		let param = {
+			'e_id'		:obj_e_id.value,
+			'e_name'	:obj_e_name.value,
+			'sex'		:obj_sex.value,
+			'addr'		:obj_addr.value
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_add',
+			data: JSON.stringify(param),
+			dataType : 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let cnt = data.cnt
+				if(cnt==1) {
+					alert("정상적으로 추가되었습니다.")
+					fn_list();
+					obj_e_id.value = "";
+					obj_e_name.value = "";
+					obj_sex.value = "";
+					obj_addr.value = "";
+				} else {
+					alert("데이터 추가 중 ERROR발생!")
+				}
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+		
+	function fn_edit(){
+		let obj_e_id	= document.querySelector("#e_id");
+		let obj_e_name  = document.querySelector("#e_name");
+		let obj_sex		= document.querySelector("#sex");
+		let obj_addr	= document.querySelector("#addr");
+		
+		let param = {
+			'e_id'		:obj_e_id.value,
+			'e_name'	:obj_e_name.value,
+			'sex'		:obj_sex.value,
+			'addr'		:obj_addr.value
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_edit',
+			data: JSON.stringify(param),
+			dataType : 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let cnt = data.cnt
+				if(cnt==1) {
+					alert("정상적으로 수정되었습니다.")
+					fn_list();
+					obj_e_id.value = "";
+					obj_e_name.value = "";
+					obj_sex.value = "";
+					obj_addr.value = "";
+				} else {
+					alert("데이터 수정 중 ERROR발생!")
+				}
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+	
+	function fn_del(){
+		let obj_e_id	= document.querySelector("#e_id");
+		let param = {
+			'e_id': obj_e_id.value
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_del',
+			data: JSON.stringify(param),
+			dataType : 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let cnt = data.cnt
+				if(cnt==1) {
+					alert("정상적으로 삭제되었습니다.")
+					fn_list();
+					obj_e_id.value = "";
+					obj_e_name.value = "";
+					obj_sex.value = "";
+					obj_addr.value = "";
+				} else {
+					alert("데이터 삭제 중 ERROR발생!")
+				}
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+</script>
+</head>
+<body onload="fn_list()">
+<table border="1">
+	<thead>
+		<tr>
+			<th>사번</th>
+			<th>이름</th>
+			<th>성별</th>
+			<th>주소</th>
+		</tr>
+	</thead>
+	<tbody id="my_tbody">
+		<tr>
+			<td colspan="4">검색된 데이터가 없습니다.</td>
+		</tr>
+	</tbody>
+</table>
+
+<table border="1">
+	<tr>
+		<th>사번</th>
+		<td>
+			<input type="text" id="e_id" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>이름</th>
+		<td>
+			<input type="text" id="e_name" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>성별</th>
+		<td>
+			<input type="text" id="sex" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>주소</th>
+		<td>
+			<input type="text" id="addr" value="" />
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<input type="button" value="추가" onclick="fn_add()" />
+			<input type="button" value="수정" onclick="fn_edit()" />
+			<input type="button" value="삭제" onclick="fn_del()" />
+		</td>
+	</tr>
+</table>
+</body>
+</html>

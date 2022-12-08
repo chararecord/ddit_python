@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript">
+	/* 전체조회 */
+	function fn_list(){
+		let data = "{{list}}"
+		$.ajax({
+			type: 'POST',
+			url: 'ajax',
+			data: JSON.stringify(data),
+			dataType: 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let list = data.list;
+				let html = "";
+				
+				for(i=0; i<list.length; i++){
+					let s = list[i]
+					html += `
+						<tr>
+							<td><a href="javascript:fn_one('${s.s_id}')">${s.s_id}</a></td>
+							<td>${s.s_name}</td>
+							<td>${s.mobile}</td>
+							<td>${s.address}</td>
+						</tr>
+					`;
+				}
+				
+				let obj = document.querySelector("#tb");
+				obj.innerHTML = html;
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+	
+	/* 하나 값 가져오기 */
+	function fn_one(s_id){
+		let param = {
+			's_id': s_id
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_one',
+			data: JSON.stringify(param),
+			dataType: 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let list = data.list;
+				console.log(list.s_id)
+				
+				let obj_s_id		= document.querySelector("#s_id");
+				let obj_s_name		= document.querySelector("#s_name");
+				let obj_mobile		= document.querySelector("#mobile");
+				let obj_address		= document.querySelector("#address");
+				
+				obj_s_id.value		= list.s_id;
+				obj_s_name.value	= list.s_name;
+				obj_mobile.value	= list.mobile;
+				obj_address.value	= list.address;
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+	
+	/* 값 추가하기 */
+	function fn_add(){
+		let obj_s_id		= document.querySelector("#s_id");
+		let obj_s_name		= document.querySelector("#s_name");
+		let obj_mobile		= document.querySelector("#mobile");
+		let obj_address		= document.querySelector("#address");
+		
+		let param = {
+			's_id'			: obj_s_id.value,
+			's_name'		: obj_s_name.value,
+			'mobile'		: obj_mobile.value,
+			'address'		: obj_address.value
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_add',
+			data: JSON.stringify(param),
+			dataType: 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let cnt = data.cnt;
+				if(cnt==1) {
+					alert("정상적으로 추가되었습니다.")
+					fn_list();
+					obj_s_id.value = "";
+					obj_s_name.value = "";
+					obj_mobile.value = "";
+					obj_address.value = "";
+				} else {
+					alert("데이터 추가 중 ERROR발생!")
+				}
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+	
+	/* 값 수정하기 */
+	function fn_edit(){
+		let obj_s_id		= document.querySelector("#s_id");
+		let obj_s_name		= document.querySelector("#s_name");
+		let obj_mobile		= document.querySelector("#mobile");
+		let obj_address		= document.querySelector("#address");
+		
+		let param = {
+			's_id'			: obj_s_id.value,
+			's_name'		: obj_s_name.value,
+			'mobile'		: obj_mobile.value,
+			'address'		: obj_address.value
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_edit',
+			data: JSON.stringify(param),
+			dataType : 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let cnt = data.cnt
+				if(cnt==1) {
+					alert("정상적으로 수정되었습니다.")
+					fn_list();
+					obj_s_id.value = "";
+					obj_s_name.value = "";
+					obj_mobile.value = "";
+					obj_address.value = "";
+				} else {
+					alert("데이터 수정 중 ERROR발생!")
+				}
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+	
+	/* 값 삭제하기 */
+	function fn_del(){
+		let obj_s_id	= document.querySelector("#s_id");
+		let param = {
+			's_id': obj_s_id.value
+		}
+		$.ajax({
+			type: 'POST',
+			url: 'ajax_del',
+			data: JSON.stringify(param),
+			dataType : 'JSON',
+			contentType: "application/json",
+			success: function(data){
+				let cnt = data.cnt
+				if(cnt==1) {
+					alert("정상적으로 삭제되었습니다.")
+					fn_list();
+					obj_s_id.value = "";
+					obj_s_name.value = "";
+					obj_mobile.value = "";
+					obj_address.value = "";
+				} else {
+					alert("데이터 삭제 중 ERROR발생!")
+				}
+			},
+			error: function(request, status, error){
+				console.log(error);
+			}
+		});
+	}
+</script>
+</head>
+<body onload="fn_list()">
+<table border="1">
+	<thead>
+		<tr>
+			<th>학번</th>
+			<th>이름</th>
+			<th>전화번호</th>
+			<th>주소</th>
+		</tr>
+	</thead>
+	<tbody id="tb">
+		<tr>
+			<td colspan="4">검색된 학생이 없습니다.</td>
+		</tr>
+	</tbody>
+</table>
+<br>
+<hr>
+<br>
+<table border="1">
+	<tr>
+		<th>학번</th>
+		<td>
+			<input type="text" id="s_id" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>이름</th>
+		<td>
+			<input type="text" id="s_name" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>전화번호</th>
+		<td>
+			<input type="text" id="mobile" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>주소</th>
+		<td>
+			<input type="text" id="address" value="" />
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<input type="button" value="추가" onclick="fn_add()" />
+			<input type="button" value="수정" onclick="fn_edit()" />
+			<input type="button" value="삭제" onclick="fn_del()" />
+		</td>
+	</tr>
+</table>
+</body>
+</html>

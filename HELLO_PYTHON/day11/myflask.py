@@ -31,7 +31,7 @@ def mem_edit_act():
     m_nm = request.form['m_nm']
     tel = request.form['tel']
     ymd = request.form['ymd']
-    cnt = dm.insert(m_id, m_nm, tel, ymd)
+    cnt = dm.update(m_id, m_nm, tel, ymd)
     return render_template('mem_edit_act.html', cnt=cnt)
 
 @app.route('/mem_add')
