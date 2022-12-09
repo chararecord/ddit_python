@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script type="text/javascript">
+	/* 전체조회 */
+	function fn_list(){
+		axios.post('/ajax_teacher_list', {
+	// 		t_id: 't_id',
+	// 		t_name: 't_name'
+		})
+		.then(function (response) {
+			let list = response.data.list
+			let html = "";
+			
+			for(i=0; i<list.length; i++){
+				let t = list[i]
+				html += `
+					<tr>
+						<td><a href="javascript:fn_one('${t.t_id}')">${t.t_id}</a></td>
+						<td>${t.t_name}</td>
+						<td>${t.mobile}</td>
+						<td>${t.addr}</td>
+					</tr>
+				`;
+			}
+			
+			let obj = document.querySelector("#my_tbody");
+			obj.innerHTML = html;
+		})
+	}
+	
+	/* 하나 가져오기 */
+	function fn_one(t_id){
+		axios.post('/ajax_teacher_one', {
+			t_id: t_id
+		}) 
+		.then(function (response) {
+			console.log(response)
+			let list = response.data.tch
+			console.log(list)
+			
+			let obj_t_id		= document.querySelector("#t_id");
+			let obj_t_name		= document.querySelector("#t_name");
+			let obj_mobile		= document.querySelector("#mobile");
+			let obj_addr		= document.querySelector("#addr");
+			
+			obj_t_id.value		= list.t_id;
+			obj_t_name.value	= list.t_name;
+			obj_mobile.value	= list.mobile;
+			obj_addr.value		= list.addr;
+		})
+	}
+	
+	/* 값 추가하기 */
+	function fn_add(){
+			let obj_t_id		= document.querySelector("#t_id");
+			let obj_t_name		= document.querySelector("#t_name");
+			let obj_mobile		= document.querySelector("#mobile");
+			let obj_addr		= document.querySelector("#addr");
+		axios.post('/ajax_teacher_add', {
+			t_name: obj_t_name.value,
+			mobile: obj_mobile.value,
+			addr: obj_addr.value
+		}) 
+		.then(function (response) {
+			console.log(response)
+			let cnt = response.data.cnt
+			console.log(cnt)
+			if(cnt==1) {
+				alert("정상적으로 추가되었습니다.")
+				fn_list();
+				obj_t_id.value = "";
+				obj_t_name.value = "";
+				obj_mobile.value = "";
+				obj_addr.value = "";
+			} else {
+				alert("데이터 추가 중 ERROR발생!")
+			}
+		})
+	}
+	
+	/* 값 수정하기 */
+	function fn_edit(){
+		let obj_t_id		= document.querySelector("#t_id");
+		let obj_t_name		= document.querySelector("#t_name");
+		let obj_mobile		= document.querySelector("#mobile");
+		let obj_addr		= document.querySelector("#addr");
+		let param = {
+			t_id: obj_t_id.value,
+			t_name: obj_t_name.value,
+			mobile: obj_mobile.value,
+			addr: obj_addr.value
+		};
+		axios.post('/ajax_teacher_edit', param)
+		.then(function (res) {
+			console.log(res)
+			let cnt = res.data.cnt
+			console.log(cnt)
+			if(cnt==1) {
+				alert("정상적으로 수정되었습니다.")
+				fn_list();
+				obj_t_id.value = "";
+				obj_t_name.value = "";
+				obj_mobile.value = "";
+				obj_addr.value = "";
+			} else {
+				alert("데이터 수정 중 ERROR발생!")
+			}
+		})
+	}
+	
+	/* 값 삭제하기 */
+	function fn_del(){
+		let flag = confirm("한번 삭제된 데이터는 복구할 수 없습니다.\n 정말로 삭제하시겠습니까?");
+		if (!flag){
+			return;
+		}
+		let obj_t_id		= document.querySelector("#t_id");
+		let obj_t_name		= document.querySelector("#t_name");
+		let obj_mobile		= document.querySelector("#mobile");
+		let obj_addr		= document.querySelector("#addr");
+		axios.post('/ajax_teacher_del', {
+			t_id: obj_t_id.value,
+		}) 
+		.then(function (response) {
+			console.log(response)
+			let cnt = response.data.cnt
+			console.log(cnt)
+			if(cnt==1) {
+				alert("정상적으로 삭제되었습니다.")
+				fn_list();
+				obj_t_id.value = "";
+				obj_t_name.value = "";
+				obj_mobile.value = "";
+				obj_addr.value = "";
+			} else {
+				alert("데이터 삭제 중 ERROR발생!")
+			}
+		})
+	}
+</script>
+</head>
+<body onload="fn_list()">
+<table border="1">
+	<thead>
+		<tr>
+			<th>사번</th>
+			<th>이름</th>
+			<th>전화</th>
+			<th>주소</th>
+		</tr>
+	</thead>
+	<tbody id="my_tbody">
+		<tr>
+			<td colspan="4">검색된 사람이 없습니다.</td>
+		</tr>
+	</tbody>
+</table>
+<br>
+<hr>
+<br>
+<table border="1">
+	<tr>
+		<th>사번</th>
+		<td>
+			<input type="text" id="t_id" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>이름</th>
+		<td>
+			<input type="text" id="t_name" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>전화</th>
+		<td>
+			<input type="text" id="mobile" value="" />
+		</td>
+	</tr>
+	<tr>
+		<th>주소</th>
+		<td>
+			<input type="text" id="addr" value="" />
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2">
+			<input type="button" value="추가" onclick="fn_add()" />
+			<input type="button" value="수정" onclick="fn_edit()" />
+			<input type="button" value="삭제" onclick="fn_del()" />
+		</td>
+	</tr>
+</table>
+</body>
+</html>
