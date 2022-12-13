@@ -26,26 +26,54 @@
 			import * as THREE from 'three';
 
 			let camera, scene, renderer;
-			let player;
+			let player, enemy, bullet;
+			let enemys = [];
+			
+			var xzs = [
+				{'x':-300,	'z':-300},
+				{'x':300,	'z':-300},
+				{'x':-300,	'z':300},
+				{'x':300,	'z':300}
+			]
 
 
 			function init() {
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
 				camera.position.z = 0;
-				camera.position.y = 1000;
+				camera.position.y = 700;
 				console.log(camera.position)
 
 				scene = new THREE.Scene();
 
-				const texture = new THREE.TextureLoader().load( 'textures/pixelPlane.png' );
-
+				const texture = new THREE.TextureLoader().load( 'tangtang/pixelPlane.png' );
+				const e_texture = new THREE.TextureLoader().load( 'tangtang/slime.png' );
+				const b_texture = new THREE.TextureLoader().load( 'tangtang/bullet.png' );
+				
 				const geometry = new THREE.BoxGeometry( 100, 0, 100 );
 				const material = new THREE.MeshBasicMaterial( { map: texture } );
-
 				player = new THREE.Mesh( geometry, material );
 				scene.add( player );
+				
+				for(var i=0; i<xzs.length; i++){
+					var e_geometry = new THREE.BoxGeometry( 50, 0, 50 );
+					var e_material = new THREE.MeshBasicMaterial( { map: e_texture } );
+					enemy = new THREE.Mesh( e_geometry, e_material );
+					enemys.push( enemy );
+					scene.add ( enemy );
+				}
+				
+				for(var i=0; i<xzs.length; i++){
+					enemys[i].position.x = xzs[i].x
+					enemys[i].position.z = xzs[i].z
+				}
+				
+				
+				
 
+
+				camera.lookAt(player.position);
+				
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -66,7 +94,17 @@
 
 			}
 
+						
+			function attack(){
+				const b_geometry = new THREE.SphereGeometry( 10, 32, 16 );
+				const b_material = new THREE.MeshBasicMaterial( { color: 0x78DBFF } );
+				const bullet = new THREE.Mesh( b_geometry, b_material );
+				bullet.position.z = player.position.z;
+				scene.add( bullet );
+			}
+
 			var p_speed = 0;
+			var b_speed = 0;
 			function animate() {
 
 				requestAnimationFrame( animate );
@@ -78,15 +116,20 @@
 				var rad = player.rotation.y;
 				var s = Math.sin(rad)*p_speed;
 				var c = Math.cos(rad)*p_speed;
+				
+				
+				//var radB = bullet.rotation.y;
+				//var sb = Math.sin(radB)*b_speed;
+				//var cb = Math.cos(radB)*b_speed;
 
 				player.position.z += -c;
 				player.position.x += -s;
-				
-				camera.lookAt(player.position)
+				//bullet.position.z += -cb;
+				//bullet.position.x += -sb;
 
 				renderer.render( scene, camera );
 			}
-
+			
 			document.addEventListener("keydown", onDocumentKeyDown, false);
 			function onDocumentKeyDown(event){
 			
@@ -99,14 +142,24 @@
 					player.rotation.y += 0.02;
 				} else if (key == 'ArrowRight') {
 					player.rotation.y -= 0.02;
+				} else if (key == 'ArrowRight') {
+					player.rotation.y -= 0.02;
+				} else if (key == ' ') {
+					console.log("스페이스다");
+					attack()
+					b_speed += 1;
 				}
 				
 				if(p_speed < 0){
 					p_speed = 0;
 				}
+				if(b_speed < 0){
+					b_speed = 0;
+				}
 
 				//console.log(p_speed, player.rotation.y, s, c);
 			};
+
 			
 			init();
 			animate();
