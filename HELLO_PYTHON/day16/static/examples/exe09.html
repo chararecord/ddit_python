@@ -36,10 +36,10 @@
 			let bullets = [];
 			
 			var xzs = [
-				{'x':-300,	'z':-300},
-				{'x':300,	'z':-300},
-				{'x':-300,	'z':300},
-				{'x':300,	'z':300}
+				{'x':-500,	'z':-500},
+				{'x':500,	'z':-500},
+				{'x':-500,	'z':500},
+				{'x':500,	'z':500}
 			]
 
 
@@ -47,7 +47,7 @@
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.z = 0;
-				camera.position.y = 700;
+				camera.position.y = 500;
 
 				scene = new THREE.Scene();
 
@@ -98,7 +98,7 @@
 			}
 
 			var p_speed = 0;
-			var b_speed = 5;
+			var b_speed = 7;
 			var flag_ing = true;
 			
 			
@@ -162,6 +162,20 @@
 						return;
 					}
 				}
+				
+				var str_character_pos = "";
+				for(var i=0; i<enemys.length; i++){
+					var e = enemys[i];
+					var ex = parseInt(e.position.x);
+					var ez = parseInt(e.position.z);
+					str_character_pos += "e."+ex+"."+ez+",";
+				}
+				var ppx = parseInt(player.position.x);
+				var ppz = parseInt(player.position.z);
+				str_character_pos += "p."+ppx+"."+ppz+"";
+				
+				console.log(str_character_pos);
+				
 				
 				renderer.render( scene, camera );
 				
