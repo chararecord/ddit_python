@@ -129,22 +129,33 @@
 
 		<script type="module">
 
-			import * as THREE from 'three';
+			import * as THREE from 'three'; // java에만 있는 import..
 
 			let camera, scene, renderer;
 			let player, enemy, bullet;
+			
 			let enemys = [];
 			let bullets = [];
-			
 			var xzs = [
 				{'x':-500,	'z':-500},
+				{'x':0,		'z':-500},
 				{'x':500,	'z':-500},
+				
+				{'x':-500,	'z':0},
+				{'x':500,	'z':0},
+				
+				{'x':0,		'z':500},
 				{'x':-500,	'z':500},
 				{'x':500,	'z':500}
 			]
 
 
 			function init() {
+				let obj_cnt_bullet = document.querySelector("#span_cnt_bullet");
+				let obj_cnt_enemy = document.querySelector("#span_cnt_enemy");
+				
+				obj_cnt_bullet.innerHTML = parseInt(xzs.length*1.5);
+				obj_cnt_enemy.innerHTML = parseInt(xzs.length);
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.z = 0;
@@ -152,15 +163,17 @@
 
 				scene = new THREE.Scene();
 
+				// 텍스쳐
 				const texture = new THREE.TextureLoader().load( 'tangtang/pixelPlane.png' );
 				const e_texture = new THREE.TextureLoader().load( 'tangtang/slime.png' );
 				
-				
+				// 플레이어
 				const geometry = new THREE.BoxGeometry( 100, 0, 100 );
 				const material = new THREE.MeshBasicMaterial( { map: texture } );
 				player = new THREE.Mesh( geometry, material );
 				scene.add( player );
 				
+				// 적
 				for(var i=0; i<xzs.length; i++){
 					var e_geometry = new THREE.BoxGeometry( 50, 0, 50 );
 					var e_material = new THREE.MeshBasicMaterial( { map: e_texture } );
@@ -169,17 +182,17 @@
 					scene.add ( enemy );
 				}
 				
+				// 적 위치
 				for(var i=0; i<xzs.length; i++){
 					enemys[i].position.x = xzs[i].x
 					enemys[i].position.z = xzs[i].z
 				}
 				
+				// 렌더링
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				document.body.appendChild( renderer.domElement );
-
-				//
 
 				window.addEventListener( 'resize', onWindowResize );
 				
@@ -198,14 +211,15 @@
 
 			}
 
-			var p_speed = 0;
-			var b_speed = 7;
-			//
+			var p_speed = 0; // 플레이어속도
+			var b_speed = 7; // 총알 속도
 			
+			function animate() { // 1초에 30번 호출
 			
-			function animate() {
+				var obj_it_name = document.querySelector("#it_name");
+				var myname = obj_it_name.value;
 
-				requestAnimationFrame( animate );
+				requestAnimationFrame( animate ); // 무한루프 거는 함수
 				if (!flag_ing){
 					return; 
 				}
@@ -259,6 +273,10 @@
 					
 					if(r < 50){
 						setTimeout("alert('게임오버')",1);
+						sock.send("dead:"+myname);
+						// alert 오류 => alert가 먼저 포커싱을 가져오는 문제가 있기 때문에
+						// 
+						// setTimeout을 이용해서 alert 딜레이 시켜둔 후 소스 출력
 						flag_ing = false;
 						p_speed = 0;
 						return;
@@ -278,7 +296,8 @@
 				
 				console.log(str_character_pos);
 				
-				sock.send("display:" + str_character_pos);
+
+				sock.send("display:" + myname + ":" + str_character_pos);
 				
 				
 				renderer.render( scene, camera );
@@ -286,15 +305,16 @@
 				// 총알이랑 적이랑 부딪히면 알람
 				for(var i=0; i<enemys.length; i++){
 					for(var j=0; j<bullets.length; j++){
-						var b = bullets[j];
 						var e = enemys[i];
 						var ex = e.position.x;
 						var ez = e.position.z;
+						
+						var b = bullets[j];
 						var bx = b.position.x;
 						var bz = b.position.z;
 						var r = Math.sqrt(((ex-bx)*(ex-bx))+((ez-bz)*(ez-bz)))
 						
-						if(r < 40){
+						if(r < 50){
 							console.log("맞았당", i, j);
 							scene.remove(e)
 							enemys.splice(i,1);
@@ -309,6 +329,7 @@
 							
 							if(cnt_enemy <= 0){
 								flag_ing = false;
+								sock.send("win:"+myname);
 								setTimeout("alert('YOU WIN!!')",1);
 								renderer.render( scene, camera );
 								return;
@@ -336,11 +357,8 @@
 					shooting()
 				}
 				
-				if(p_speed < 0){
+				if(p_speed < 0){ // p_speed가 마이너스로 떨어지지 않도록
 					p_speed = 0;
-				}
-				if(b_speed < 0){
-					b_speed = 0;
 				}
 
 				//console.log(b_speed, bullet.rotation.y, sb, cb);
@@ -378,7 +396,7 @@
 			init();
 			animate();
 		</script>
-		<script>
+		<script> // 웹소켓 관련 script
 			var sock;
 			function fn_init(){
 				sock = io.connect('http://192.168.35.89:8070');
@@ -396,14 +414,66 @@
 					if(infos[0]=="start"){
 						rv_start(infos[1]);
 					}
-					if(infos[0]=="done"){
-						rv_done(infos[1]);
+					if(infos[0]=="display"){
+						rv_display(infos[1],infos[2]);
+					}
+					if(infos[0]=="dead"){
+						rv_dead(infos[1]);
+					}
+					if(infos[0]=="win"){
+						rv_win(infos[1]);
 					}
 				});
 			}
 			
 			var cnt = 0;
 			var users = [];
+			
+			function rv_win(name){
+				alert(name+"가 이겼습니다.");
+				flag_ing = false;
+			}
+			
+			// 죽으면 이름 배경 빨갛게 처리하기
+			function rv_dead(str_users){
+				var idx = checkUser(p_name);
+				var st_names = document.getElementsByClassName(".st_name");
+				st_names[idx].style.backgroundColor = red;
+			}
+			
+			// canvas에 현재 플레이 화면 띄우기
+			function rv_display(p_name, str){
+				var idx = checkUser(p_name);
+				var arr_char = str.split(",");
+				var canvas = document.getElementsByClassName("can_user");
+				var context = canvas[idx].getContext("2d");
+				context.clearRect(0, 0, canvas[idx].width, canvas[idx].height)
+				
+				for(var i=0; i<arr_char.length; i++){
+					var bpxz = arr_char[i].split(".");
+					var ep = bpxz[0];
+					var epx = parseInt(bpxz[1]);
+					var epz = parseInt(bpxz[2]);
+					if(ep=="e"){
+						var cenx = (epx+500)*(1/10);
+						var ceny = (epz+500)*(1/10);
+						context.beginPath();
+						context.rect(cenx-10, ceny-10, 10*2, 10*2);
+						context.fillStyle = "#FF0450";
+						context.fill();
+						context.closePath();
+					}
+					if(ep=="p"){
+						var cenx = (epx+500)*(1/10);
+						var ceny = (epz+500)*(1/10);
+						context.beginPath();
+						context.arc(cenx, ceny, 10, 0, Math.PI*2, false);
+						context.fillStyle = "skyblue";
+						context.fill();
+						context.closePath();
+					}
+				}
+			}
 			
 			function fn_start(){
 				sock.send("start:"+users);
